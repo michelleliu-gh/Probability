@@ -1,6 +1,0 @@
----
-title: "Probability"
-author: "Michelle Liu"
-format: html
----
-

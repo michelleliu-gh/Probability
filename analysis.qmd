@@ -2,5 +2,60 @@
 title: "Sampling"
 author: "Michelle Liu"
 format: html
+excecute:
+    echo: false
 ---
+
+
+```{r}
+#| message: false
+library(tidyverse)
+library(primer.data)
+```
+
+```{r}
+shaming
+```
+
+```{r}
+#| cache: true
+set.seed(10)
+truth <- mean(shaming$age, na.rm = TRUE)
+
+samples <- tibble(id = 1:1000) %>%
+  rowwise() %>%
+  mutate(
+    draw = list(sample_n(shaming, size = 50)),
+    sample_mean = mean(draw$age, na.rm = TRUE),
+    sample_se = sd(draw$age, na.rm = TRUE) / sqrt(nrow(draw)),
+    lower = sample_mean - 1.96 * sample_se,
+    upper = sample_mean + 1.96 * sample_se
+  ) %>%
+  ungroup() %>%
+  select(-draw)
+```
+
+```{r}
+hit_fraction <- mean(samples$lower < truth & samples$upper > truth)
+hit_fraction
+```
+
+```{r}
+plot_data <- samples %>%
+  slice_head(n = 100) %>%
+  mutate(sample = row_number())
+
+ggplot(plot_data, aes(x = sample_mean, y = sample)) +
+  geom_errorbarh(aes(xmin = lower, xmax = upper), height = 0.4) +
+  geom_point(color = "black") +
+  geom_vline(xintercept = truth, color = "red", linetype = "dashed") +
+  scale_y_continuous("Sample draw", breaks = NULL) +
+  labs(
+    x = "Mean age (years)",
+    title = "Sampling variation for 50-voter means",
+    subtitle = "About 95% of 95% intervals cover the true population mean.",
+    caption = "Data from primer.data"
+  ) +
+  theme_minimal()
+```
 
